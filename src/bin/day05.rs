@@ -1,26 +1,16 @@
-use std::{collections::HashSet, iter, ops::RangeInclusive};
+use aoc2025::parse_range;
+use aoc2025::range_union;
 
-use anyhow::anyhow;
 type Result<T> = anyhow::Result<T>;
 
-type MyRange = RangeInclusive<u64>;
-fn intersect(r1: &MyRange, r2: &MyRange) -> Option<MyRange> {
-    if r1.start() > r2.end() || r2.start() > r1.end() {
-        return None;
-    }
-
-    Some((*r1.start().min(r2.start()))..=(*r1.end().max(r2.end())))
-}
 fn main() -> Result<()> {
     let s = std::fs::read_to_string("input/day05.txt")?;
     let (part1, part2) = s.split_once("\n\n").unwrap();
     // println!("'{part1}'\n'{part2}'");
     let mut ranges = part1
         .lines()
-        .map(|line| {
-            let (start, end) = line.split_once('-').unwrap();
-            u64::from_str_radix(start, 10).unwrap()..=u64::from_str_radix(end, 10).unwrap()
-        })
+        .map(parse_range)
+        .map(|it| it.unwrap())
         .collect::<Vec<_>>();
     let ids = part2
         .lines()
@@ -39,7 +29,7 @@ fn main() -> Result<()> {
             if let Some((i, ir)) = min_ranges
                 .iter()
                 .enumerate()
-                .find_map(|(i, mr)| intersect(&r, mr).map(|ir| (i, ir)))
+                .find_map(|(i, mr)| range_union(&r, mr).map(|ir| (i, ir)))
             {
                 println!("merge: {:?} {:?} -> {:?}", r, min_ranges[i], ir);
                 min_ranges[i] = ir;
