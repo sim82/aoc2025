@@ -29,7 +29,7 @@ fn main() -> Result<()> {
             if let Some((i, ir)) = min_ranges
                 .iter()
                 .enumerate()
-                .find_map(|(i, mr)| range_union(&r, mr).map(|ir| (i, ir)))
+                .find_map(|(i, mr)| range_union(r, mr).map(|ir| (i, ir)))
             {
                 println!("merge: {:?} {:?} -> {:?}", r, min_ranges[i], ir);
                 min_ranges[i] = ir;

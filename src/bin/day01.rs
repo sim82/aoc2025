@@ -1,6 +1,5 @@
 use std::iter;
 
-use anyhow::anyhow;
 type Result<T> = anyhow::Result<T>;
 // use nom::{
 //     IResult,
@@ -36,7 +35,7 @@ fn main() -> Result<()> {
         .lines()
         .filter_map(|line| line_to_num(line).ok())
         .scan(50, |acc, i| {
-            *acc = *acc + i;
+            *acc += i;
             let wrap_click = if (*acc % 100) == 0 { 1 } else { 0 };
 
             Some(wrap_click)
@@ -46,9 +45,9 @@ fn main() -> Result<()> {
     let zeros = s
         .lines()
         .filter_map(|line| line_to_num(line).ok())
-        .flat_map(|i| iter::repeat_n(i.signum(), i.abs() as usize))
+        .flat_map(|i| iter::repeat_n(i.signum(), i.unsigned_abs() as usize))
         .scan(50, |acc, i| {
-            *acc = *acc + i;
+            *acc += i;
             let wrap_click = if (*acc % 100) == 0 { 1 } else { 0 };
 
             Some(wrap_click)

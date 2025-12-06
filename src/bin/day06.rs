@@ -47,7 +47,7 @@ fn main() -> Result<()> {
             let num = &cur.iter().collect::<String>();
             println!("'{num}'");
             x += 1;
-            if let Ok(num) = u64::from_str_radix(&num.trim(), 10) {
+            if let Ok(num) = u64::from_str_radix(num.trim(), 10) {
                 nums.push(num);
             } else {
                 break;

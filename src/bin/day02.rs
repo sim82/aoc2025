@@ -1,9 +1,8 @@
-use std::{collections::HashSet, iter};
+use std::collections::HashSet;
 
-use anyhow::anyhow;
 type Result<T> = anyhow::Result<T>;
 fn is_invalid(s: &str) -> bool {
-    if s.len() % 2 != 0 {
+    if !s.len().is_multiple_of(2) {
         return false;
     }
     s[..(s.len() / 2)] == s[(s.len() / 2)..]
@@ -17,7 +16,7 @@ fn is_invalid2(s: &str) -> bool {
             return true;
         }
     }
-    return false;
+    false
 }
 fn main() -> Result<()> {
     let s = std::fs::read_to_string("input/day02.txt")?;

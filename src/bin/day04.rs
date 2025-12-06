@@ -1,6 +1,5 @@
-use std::{collections::HashSet, iter};
+use std::collections::HashSet;
 
-use anyhow::anyhow;
 type Result<T> = anyhow::Result<T>;
 fn main() -> Result<()> {
     let s = std::fs::read_to_string("input/day04.txt")?;
