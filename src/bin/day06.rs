@@ -22,7 +22,7 @@ fn main() -> Result<()> {
         println!("{res}");
         sum += res;
     }
-    println!("sum: {sum}");
+    println!("sum1: {sum}");
 
     let mut x = 0;
     let symbols = symbols.chars().collect::<Vec<_>>();
@@ -40,12 +40,7 @@ fn main() -> Result<()> {
 
         let mut nums = Vec::new();
         while x < symbols.len() {
-            let mut cur = Vec::new();
-            for line in numbers.iter() {
-                cur.push(line[x]);
-            }
-            let num = &cur.iter().collect::<String>();
-            println!("'{num}'");
+            let num: String = numbers.iter().map(|line| line[x]).collect();
             x += 1;
             if let Ok(num) = u64::from_str_radix(num.trim(), 10) {
                 nums.push(num);
@@ -59,7 +54,7 @@ fn main() -> Result<()> {
         };
         sum += res;
     }
-    println!("{sum}");
+    println!("sum2: {sum}");
 
     Ok(())
 }
