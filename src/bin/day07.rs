@@ -42,6 +42,7 @@ fn main() -> Result<()> {
     }
 
     {
+        // track timeline count per position. Starts with 1 at S
         let mut timelines: Vec<_> = s
             .lines()
             .next()
@@ -54,9 +55,11 @@ fn main() -> Result<()> {
             let mut new_timelines = vec![0u64; timelines.len()];
             for i in 0..timelines.len() {
                 if splitters[i] == '^' {
+                    // a splitter distibutes existing timeline counts to the left and right
                     new_timelines[i - 1] += timelines[i];
                     new_timelines[i + 1] += timelines[i];
                 } else {
+                    // otherwise take over previous count
                     new_timelines[i] += timelines[i];
                 }
             }
