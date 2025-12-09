@@ -18,5 +18,5 @@ pub fn parse_range(s: &str) -> Result<RangeInclusive<u64>> {
         .trim()
         .split_once('-')
         .ok_or(anyhow!("failed to split range"))?;
-    Ok(u64::from_str_radix(start, 10)?..=u64::from_str_radix(end, 10)?)
+    Ok(start.parse()?..=end.parse()?)
 }

@@ -12,7 +12,7 @@ fn is_invalid2(s: &str) -> bool {
     let chars = s.chars().collect::<Vec<_>>();
     for i in 1..=(chars.len() / 2) {
         if chars.chunks(i).collect::<HashSet<_>>().len() == 1 {
-            println!("{s}");
+            // println!("{s}");
             return true;
         }
     }
@@ -25,7 +25,7 @@ fn main() -> Result<()> {
         .split(',')
         .map(|s| {
             let (start, end) = s.split_once('-').unwrap();
-            u64::from_str_radix(start, 10).unwrap()..=u64::from_str_radix(end, 10).unwrap()
+            start.parse::<u64>().unwrap()..=end.parse::<u64>().unwrap()
         })
         .collect::<Vec<_>>();
 

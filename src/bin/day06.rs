@@ -9,7 +9,7 @@ fn main() -> Result<()> {
         .iter()
         .map(|line| {
             line.split_whitespace()
-                .map(|n| u64::from_str_radix(n.trim(), 10).unwrap())
+                .map(|n| n.trim().parse::<u64>().unwrap())
                 .collect::<Vec<_>>()
         })
         .collect::<Vec<_>>();
@@ -42,7 +42,7 @@ fn main() -> Result<()> {
         while x < symbols.len() {
             let num: String = numbers.iter().map(|line| line[x]).collect();
             x += 1;
-            if let Ok(num) = u64::from_str_radix(num.trim(), 10) {
+            if let Ok(num) = num.trim().parse() {
                 nums.push(num);
             } else {
                 break;

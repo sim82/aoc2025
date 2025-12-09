@@ -22,9 +22,9 @@ fn line_to_num(line: &str) -> Result<i64> {
     // let line = line.as_bytes();
 
     let n = if line[0..1] == *"R" {
-        i64::from_str_radix(&line[1..], 10)?
+        line[1..].parse()?
     } else {
-        -i64::from_str_radix(&line[1..], 10)?
+        -line[1..].parse::<i64>()?
     };
 
     Ok(n)

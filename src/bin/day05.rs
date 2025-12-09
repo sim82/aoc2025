@@ -14,7 +14,7 @@ fn main() -> Result<()> {
         .collect::<Vec<_>>();
     let ids = part2
         .lines()
-        .map(|line| u64::from_str_radix(line.trim(), 10).unwrap())
+        .map(|line| line.trim().parse().unwrap())
         .collect::<Vec<_>>();
     let num = ids
         .iter()

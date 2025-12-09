@@ -1,4 +1,3 @@
-
 type Result<T> = anyhow::Result<T>;
 // use nom::{
 //     IResult,
@@ -17,17 +16,6 @@ type Result<T> = anyhow::Result<T>;
 //     alt((preceded(tag("L"), decimal), preceded(tag("R"), decimal)))
 // }
 //
-fn line_to_num(line: &str) -> Result<i64> {
-    // let line = line.as_bytes();
-
-    let n = if line[0..1] == *"R" {
-        i64::from_str_radix(&line[1..], 10)?
-    } else {
-        -i64::from_str_radix(&line[1..], 10)?
-    };
-
-    Ok(n)
-}
 fn main() -> Result<()> {
     let s = std::fs::read_to_string("input/day03.txt")?;
     let res = s
