@@ -1,6 +1,8 @@
-use std::iter::Sum;
+use std::{fmt::Debug, iter::Sum};
 
-use good_lp::{Expression, Solution, SolverModel, constraint, variable, variables};
+use good_lp::{
+    Expression, ProblemVariables, Solution, SolverModel, constraint, variable, variables,
+};
 use pathfinding::directed::dijkstra::dijkstra;
 
 type Result<T> = anyhow::Result<T>;
@@ -88,68 +90,64 @@ fn main() -> Result<()> {
         .iter()
         .map(|input| Machine::read(input))
         .collect::<Vec<_>>();
-    println!("{machines:?}");
 
     let res = machines
         .iter()
-        .map(|machine| {
-            dijkstra(
-                &0,
-                |state| {
-                    machine
-                        .transitions
-                        .iter()
-                        .map(|transition| (state ^ transition, 1))
-                        .collect::<Vec<_>>()
-                },
-                |state| *state == machine.lights,
-            )
-            .unwrap()
-            .0
-            .len()
-                - 1
-        })
+        .map(
+            |Machine {
+                 lights,
+                 transitions,
+                 ..
+             }| {
+                dijkstra(
+                    &0,
+                    |state| {
+                        let state = *state;
+                        transitions
+                            .iter()
+                            .map(move |transition| (state ^ transition, 1))
+                    },
+                    |state| *state == *lights,
+                )
+                .unwrap()
+                .1
+            },
+        )
         .sum::<usize>();
-    // .collect::<Vec<_>>();
 
     println!("res: {res}");
 
-    let mut res = 0f64;
-    for machine in &machines {
-        let mut vars = variables!();
-        let a = machine
-            .transitions2
-            .iter()
-            .map(|_tr| vars.add(variable().integer().min(0)))
-            .collect::<Vec<_>>();
-        // println!("a len: {}", a.len());
-        // println!("reqs: {:?}", machine.reqs);
-        let mut model = vars
-            .minimise(Expression::sum(a.iter()))
-            .using(good_lp::default_solver);
-        for (i, b) in machine.reqs.iter().enumerate() {
-            let sel_a = machine
-                .transitions2
-                .iter()
-                .zip(a.iter())
-                .filter_map(|(tr, a)| {
-                    // println!("tr: {tr:?} i: {i}");
-                    if tr.contains(&i) { Some(a) } else { None }
-                });
-            // println!("a_sel: {:?}", a);
-            model = model.with(constraint::eq(Expression::sum(sel_a), *b))
-        }
-        let solution = model.solve();
-        match solution {
-            Ok(sol) => {
-                let sum = sol.eval(Expression::sum(a.iter()));
-                res += sum;
-                println!("Minimal Sum: {sum}");
-            }
+    let res = machines
+        .iter()
+        .map(
+            |Machine {
+                 transitions2, reqs, ..
+             }| {
+                let mut vars = ProblemVariables::new();
+                let a = vars.add_vector(variable().integer().min(0), transitions2.len());
+                let solution = vars
+                    .minimise(a.iter().sum::<Expression>())
+                    .using(good_lp::default_solver)
+                    .with_all(reqs.iter().enumerate().map(|(i, b)| {
+                        let sel_a = transitions2
+                            .iter()
+                            .zip(a.iter())
+                            .filter_map(|(tr, a)| if tr.contains(&i) { Some(a) } else { None });
+                        constraint!(sel_a.sum::<Expression>() == *b)
+                    }))
+                    .solve();
 
-            Err(e) => println!("Solving failed: {:?}", e),
-        }
-    }
+                match solution {
+                    Ok(sol) => {
+                        let sum = sol.eval(a.iter().sum::<Expression>());
+                        sum
+                    }
+
+                    Err(e) => panic!("Solving failed: {:?}", e),
+                }
+            },
+        )
+        .sum::<f64>();
     println!("res2: {res}");
     Ok(())
 }
