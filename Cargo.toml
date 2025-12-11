@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 anyhow = "1.0.100"
+good_lp = { version = "1.14.2", features = ["microlp"], default-features = false }
 nalgebra = "0.34.1"
 pathfinding = "4.14.0"
 # nalgebra = "0.34.1"

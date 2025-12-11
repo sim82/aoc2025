@@ -1,6 +1,7 @@
-use nalgebra::{DMatrix, DVector};
+use std::iter::Sum;
+
+use good_lp::{Expression, Solution, SolverModel, constraint, variable, variables};
 use pathfinding::directed::dijkstra::dijkstra;
-use std::collections::HashSet;
 
 type Result<T> = anyhow::Result<T>;
 
@@ -113,64 +114,42 @@ fn main() -> Result<()> {
 
     println!("res: {res}");
 
-    // hopeless...
-    // let res2 = machines
-    //     .iter()
-    //     .map(|machine| {
-    //         let res = dijkstra(
-    //             &vec![0; machine.reqs.len()],
-    //             |state| {
-    //                 machine
-    //                     .transitions2
-    //                     .iter()
-    //                     .map(|tr| {
-    //                         let mut state = state.clone();
-    //                         for i in tr {
-    //                             state[*i] += 1;
-    //                         }
-    //                         (state, 1)
-    //                     })
-    //                     .collect::<Vec<_>>()
-    //             },
-    //             |state| {
-    //                 println!("{state:?}");
-    //                 *state == machine.reqs
-    //             },
-    //         )
-    //         .unwrap()
-    //         .0
-    //         .len()
-    //             - 1;
-    //         // println!("{res}");
-    //         res
-    //     })
-    //     .sum::<usize>();
-    // // .collect::<Vec<_>>();
-
-    // println!("res: {res2}");
-
+    let mut res = 0f64;
     for machine in &machines {
-        let n = machine.reqs.len();
-        let rows = machine
+        let mut vars = variables!();
+        let a = machine
             .transitions2
             .iter()
-            .map(|tr| {
-                let mut v = DVector::repeat(n, 0f64);
-                for i in tr {
-                    v[*i] = 1f64;
-                }
-                v
-            })
+            .map(|_tr| vars.add(variable().integer().min(0)))
             .collect::<Vec<_>>();
-        let m = DMatrix::from_columns(&rows[..]);
-        // let b = DVector::column(machine.reqs);
-        let b = DVector::from_iterator(machine.reqs.len(), machine.reqs.iter().map(|v| *v as f64));
-        println!("matrix: {m}");
-        println!("b: {b}");
-        match m.svd(true, true).solve(&b, 1e-6) {
-            Ok(a) => println!("a: {a} {}", a.sum()),
-            Err(e) => println!("fail: {e:?}"),
+        // println!("a len: {}", a.len());
+        // println!("reqs: {:?}", machine.reqs);
+        let mut model = vars
+            .minimise(Expression::sum(a.iter()))
+            .using(good_lp::default_solver);
+        for (i, b) in machine.reqs.iter().enumerate() {
+            let sel_a = machine
+                .transitions2
+                .iter()
+                .zip(a.iter())
+                .filter_map(|(tr, a)| {
+                    // println!("tr: {tr:?} i: {i}");
+                    if tr.contains(&i) { Some(a) } else { None }
+                });
+            // println!("a_sel: {:?}", a);
+            model = model.with(constraint::eq(Expression::sum(sel_a), *b))
+        }
+        let solution = model.solve();
+        match solution {
+            Ok(sol) => {
+                let sum = sol.eval(Expression::sum(a.iter()));
+                res += sum;
+                println!("Minimal Sum: {sum}");
+            }
+
+            Err(e) => println!("Solving failed: {:?}", e),
         }
     }
+    println!("res2: {res}");
     Ok(())
 }
