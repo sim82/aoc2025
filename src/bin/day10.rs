@@ -1,3 +1,4 @@
+use nalgebra::{DMatrix, DVector};
 use pathfinding::directed::dijkstra::dijkstra;
 use std::collections::HashSet;
 
@@ -112,39 +113,64 @@ fn main() -> Result<()> {
 
     println!("res: {res}");
 
-    let res2 = machines
-        .iter()
-        .map(|machine| {
-            let res = dijkstra(
-                &vec![0; machine.reqs.len()],
-                |state| {
-                    machine
-                        .transitions2
-                        .iter()
-                        .map(|tr| {
-                            let mut state = state.clone();
-                            for i in tr {
-                                state[*i] += 1;
-                            }
-                            (state, 1)
-                        })
-                        .collect::<Vec<_>>()
-                },
-                |state| {
-                    println!("{state:?}");
-                    *state == machine.reqs
-                },
-            )
-            .unwrap()
-            .0
-            .len()
-                - 1;
-            // println!("{res}");
-            res
-        })
-        .sum::<usize>();
-    // .collect::<Vec<_>>();
+    // hopeless...
+    // let res2 = machines
+    //     .iter()
+    //     .map(|machine| {
+    //         let res = dijkstra(
+    //             &vec![0; machine.reqs.len()],
+    //             |state| {
+    //                 machine
+    //                     .transitions2
+    //                     .iter()
+    //                     .map(|tr| {
+    //                         let mut state = state.clone();
+    //                         for i in tr {
+    //                             state[*i] += 1;
+    //                         }
+    //                         (state, 1)
+    //                     })
+    //                     .collect::<Vec<_>>()
+    //             },
+    //             |state| {
+    //                 println!("{state:?}");
+    //                 *state == machine.reqs
+    //             },
+    //         )
+    //         .unwrap()
+    //         .0
+    //         .len()
+    //             - 1;
+    //         // println!("{res}");
+    //         res
+    //     })
+    //     .sum::<usize>();
+    // // .collect::<Vec<_>>();
 
-    println!("res: {res2}");
+    // println!("res: {res2}");
+
+    for machine in &machines {
+        let n = machine.reqs.len();
+        let rows = machine
+            .transitions2
+            .iter()
+            .map(|tr| {
+                let mut v = DVector::repeat(n, 0f64);
+                for i in tr {
+                    v[*i] = 1f64;
+                }
+                v
+            })
+            .collect::<Vec<_>>();
+        let m = DMatrix::from_columns(&rows[..]);
+        // let b = DVector::column(machine.reqs);
+        let b = DVector::from_iterator(machine.reqs.len(), machine.reqs.iter().map(|v| *v as f64));
+        println!("matrix: {m}");
+        println!("b: {b}");
+        match m.svd(true, true).solve(&b, 1e-6) {
+            Ok(a) => println!("a: {a} {}", a.sum()),
+            Err(e) => println!("fail: {e:?}"),
+        }
+    }
     Ok(())
 }
