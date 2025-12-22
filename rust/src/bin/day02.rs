@@ -19,7 +19,7 @@ fn is_invalid2(s: &str) -> bool {
     false
 }
 fn main() -> Result<()> {
-    let s = std::fs::read_to_string("input/day02.txt")?;
+    let s = std::fs::read_to_string("../input/day02.txt")?;
     let ranges = s
         .trim()
         .split(',')

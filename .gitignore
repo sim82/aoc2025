@@ -1,2 +1,6 @@
-/target
+rust/target
 /input/*.txt
+*.beam
+*.ez
+gleam/build
+gleam/erl_crash.dump
