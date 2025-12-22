@@ -5,7 +5,7 @@ type Result<T> = anyhow::Result<T>;
 // type Vec3 = nalgebra::Vector3<f32>;
 
 fn main() -> Result<()> {
-    let s = std::fs::read_to_string("input/day08.txt")?;
+    let s = std::fs::read_to_string("../input/day08.txt")?;
 
     let vs: Vec<(i32, i32, i32)> = s
         .lines()
