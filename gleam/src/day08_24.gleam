@@ -46,16 +46,6 @@ pub fn main() -> Nil {
     |> result.map(int.add(_, 1))
   echo #(w, h)
 
-  // let blocks =
-  //   fields
-  //   |> list.filter_map(fn(t) {
-  //     case t {
-  //       #(x, y, "#") -> Ok(#(x, y))
-  //       _ -> Error("")
-  //     }
-  //   })
-  //   |> set.from_list
-  //   |> echo
   fields
   |> list.group(fn(field) { field.2 })
   |> dict.map_values(fn(_key, value) {
