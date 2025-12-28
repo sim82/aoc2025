@@ -9,7 +9,7 @@ import gleam/string
 import simplifile
 
 pub fn main() -> Nil {
-  let assert Ok(f) = simplifile.read("../input/24_09.txt")
+  let assert Ok(f) = simplifile.read("../input/24_09_ex.txt")
 
   let blocks =
     f
@@ -74,13 +74,30 @@ pub fn main() -> Nil {
       }
     })
 
-  // res
-  // |> debug_str
-  // |> echo
-
-  let s1 = res |> list.index_fold(0, fn(acc, c, i) { acc + i * int.max(c, 0) })
+  let s1 = checksum(res)
   echo s1
+
+  echo blocks
+  blocks
+  |> list.fold([], fn(acc, b) {
+    case acc {
+      [] -> [#(1, b)]
+      [#(len, head), ..tail] -> {
+        case head == b {
+          True -> [#(len + 1, head), ..tail]
+          False -> [#(1, b), #(len, head), ..tail]
+        }
+      }
+    }
+  })
+  |> list.reverse
+  |> echo
   Nil
+}
+
+fn checksum(res: List(Int)) -> Int {
+  let s1 = res |> list.index_fold(0, fn(acc, c, i) { acc + i * int.max(c, 0) })
+  s1
 }
 
 fn debug_str(l) {
