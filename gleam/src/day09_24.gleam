@@ -1,11 +1,6 @@
-import gleam/dict
-import gleam/function
 import gleam/int
-import gleam/io
 import gleam/list
 import gleam/order
-import gleam/result
-import gleam/set.{type Set}
 import gleam/string
 import simplifile
 
@@ -117,62 +112,80 @@ fn to_blocks(extents: List(#(Int, Int))) -> List(Int) {
   }
 }
 
+// try to stuff one extent list into empty extents of another list
 fn stuff_extents(extents: List(#(Int, Int)), full: List(#(Int, Int))) {
   case full {
     [] -> extents
-    [head, ..tail] ->
-      stuff_extents(
-        remove_duplicates(stuff_extent(extents, head), set.new()),
-        tail,
-      )
+    [head, ..tail] -> stuff_extents(stuff_extent(extents, head), tail)
   }
 }
 
+// try to stuff extent to_stuff into empty extent (before itself)
 fn stuff_extent(
   extents: List(#(Int, Int)),
-  ext: #(Int, Int),
+  to_stuff: #(Int, Int),
 ) -> List(#(Int, Int)) {
   case extents {
     [] -> []
     [head, ..tail] -> {
-      case head.1, int.compare(head.0, ext.0) {
-        -1, order.Eq -> [ext, ..tail]
-        -1, order.Gt -> [ext, #(head.0 - ext.0, -1), ..tail]
-        _, _ -> [head, ..stuff_extent(tail, ext)]
-      }
-    }
-  }
-}
-
-fn remove_duplicates(
-  extents: List(#(Int, Int)),
-  acc: Set(Int),
-) -> List(#(Int, Int)) {
-  case extents {
-    [] -> []
-    [head, ..tail] -> {
-      case set.contains(acc, head.1) {
-        True -> [
-          #(head.0, -1),
-          ..remove_duplicates(tail, set.insert(acc, head.1))
+      case head.1, int.compare(head.0, to_stuff.0) {
+        // case 1: found empty extent to stuff it into. Recursively remove extent from tail
+        -1, order.Eq -> [to_stuff, ..remove_extent(tail, to_stuff.1)]
+        -1, order.Gt -> [
+          to_stuff,
+          #(head.0 - to_stuff.0, -1),
+          ..remove_extent(tail, to_stuff.1)
         ]
-        False -> [head, ..remove_duplicates(tail, set.insert(acc, head.1))]
+        // case 2: extent not empty or too small
+        c, _ -> {
+          case c == to_stuff.1 {
+            // it the 'stuffed' extent meets 'itself' in the extent list,
+            // stop recursion, since this would mean moving it _backwards_
+            True -> [head, ..tail]
+            // otherwise continue stuffing...
+            False -> [head, ..stuff_extent(tail, to_stuff)]
+          }
+        }
       }
     }
   }
 }
 
-//00992111777.44.333....5555.6666.....8888..
-//00992111777244.333.44.5555.6666.777.888899
-// fn fill_extents(
+fn remove_extent(
+  extents: List(#(Int, Int)),
+  to_remove: Int,
+) -> List(#(Int, Int)) {
+  case extents {
+    [] -> []
+    [head, ..tail] -> {
+      case head.1 == to_remove {
+        True -> {
+          [#(head.0, -1), ..tail]
+        }
+        False -> [head, ..remove_extent(tail, to_remove)]
+      }
+    }
+  }
+}
+
+// fn remove_extent(extents, _) {
+//   extents
+// }
+
+// fn remove_duplicates(
 //   extents: List(#(Int, Int)),
-//   full: List(#(Int, Int)),
+//   acc: Set(Int),
 // ) -> List(#(Int, Int)) {
-// case fu
 //   case extents {
 //     [] -> []
 //     [head, ..tail] -> {
-
+//       case set.contains(acc, head.1) {
+//         True -> [
+//           #(head.0, -1),
+//           ..remove_duplicates(tail, set.insert(acc, head.1))
+//         ]
+//         False -> [head, ..remove_duplicates(tail, set.insert(acc, head.1))]
+//       }
 //     }
 //   }
 // }
