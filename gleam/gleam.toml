@@ -18,6 +18,7 @@ simplifile = ">= 2.3.1 and < 3.0.0"
 gleam_yielder = ">= 1.1.0 and < 2.0.0"
 file_streams = ">= 1.7.0 and < 2.0.0"
 gleam_regexp = ">= 1.1.1 and < 2.0.0"
+rememo = ">= 3.3.0 and < 4.0.0"
 
 [dev-dependencies]
 gleeunit = ">= 1.0.0 and < 2.0.0"
